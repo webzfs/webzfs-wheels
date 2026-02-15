@@ -78,7 +78,7 @@ If requirements.txt is updated, the version constants in the build scripts shoul
 
 ## NetBSD Notes
 
-The pkgsrc `rust` package on NetBSD has known issues (Bus error on execution). The NetBSD build script uses rustup to install a working Rust compiler instead. See `NETBSD_PYDANTIC_FIX.md` for more details.
+The pkgsrc `rust` package on NetBSD has known issues (Bus error on execution). The NetBSD build script uses rustup to install a working Rust compiler instead.
 
 ## Wheel Naming Convention
 
@@ -91,30 +91,3 @@ For example:
 ```
 pydantic_core-2.41.5-cp311-cp311-freebsd_14_3_amd64.whl
 ```
-
-## Troubleshooting
-
-### Build fails with "Rust not found"
-Ensure Rust is properly installed. On NetBSD, use rustup instead of pkgsrc:
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source $HOME/.cargo/env
-```
-
-### Build fails with missing OpenSSL headers
-Install OpenSSL development files:
-```bash
-# FreeBSD
-pkg install openssl
-
-# NetBSD
-pkgin install openssl
-```
-
-### Wheel not used during installation
-Verify the wheel matches:
-1. The exact package version
-2. The Python version (cp311 for Python 3.11)
-3. The platform tag
-
-Use `pip debug --verbose` to see which platforms pip will accept.
