@@ -5,7 +5,8 @@
 # This script builds Python wheels for packages that require native compilation.
 # Pre-built wheels eliminate the need to compile dependencies during installation.
 #
-# Packages built:
+# It fetches the current requirements.txt from the main webzfs repo on GitHub
+# and builds wheels for packages that need native compilation:
 #   - pydantic-core (Rust)
 #   - cryptography (Rust + C)
 #   - psutil (C)
@@ -27,12 +28,10 @@ PYTHON_VERSION="311"
 PYTHON_CMD="python3.11"
 WHEELHOUSE_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="/tmp/webzfs_wheel_build"
+REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/main/requirements.txt"
 
-# Package versions from requirements.txt
-PYDANTIC_CORE_VERSION="2.41.5"
-CRYPTOGRAPHY_VERSION="44.0.0"
-PSUTIL_VERSION="7.1.3"
-MARKUPSAFE_VERSION="3.0.3"
+# Packages that require native compilation (need pre-built wheels)
+NATIVE_PACKAGES="pydantic-core cryptography psutil markupsafe"
 
 # Colors for output
 RED='\033[0;31m'
@@ -56,6 +55,42 @@ fi
 NETBSD_VERSION=$(uname -r)
 echo "NetBSD version: $NETBSD_VERSION"
 echo
+
+# Fetch requirements.txt from GitHub
+echo "Fetching requirements.txt from webzfs/webzfs..."
+REQUIREMENTS_FILE="$BUILD_DIR/requirements.txt"
+mkdir -p "$BUILD_DIR"
+
+curl -sSfL -o "$REQUIREMENTS_FILE" "$REQUIREMENTS_URL"
+
+if [ ! -s "$REQUIREMENTS_FILE" ]; then
+    printf "${RED}Error: Failed to fetch requirements.txt${NC}\n"
+    exit 1
+fi
+
+printf "${GREEN}OK${NC} requirements.txt fetched\n"
+echo
+
+# Parse package versions from requirements.txt
+# Extract "package==version" for each native package
+echo "Resolving native package versions from requirements.txt..."
+PACKAGES_TO_BUILD=""
+for pkg in $NATIVE_PACKAGES; do
+    version=$(grep -i "^${pkg}==" "$REQUIREMENTS_FILE" | sed 's/ *;.*//' | head -1)
+    if [ -n "$version" ]; then
+        PACKAGES_TO_BUILD="$PACKAGES_TO_BUILD $version"
+        printf "  ${GREEN}✓${NC} %s\n" "$version"
+    else
+        printf "  ${RED}✗${NC} %s not found in requirements.txt\n" "$pkg"
+    fi
+done
+echo
+
+if [ -z "$PACKAGES_TO_BUILD" ]; then
+    printf "${RED}Error: No native packages found in requirements.txt${NC}\n"
+    rm -rf "$BUILD_DIR"
+    exit 1
+fi
 
 # Install build dependencies via pkgsrc
 echo "Installing build dependencies via pkgsrc..."
@@ -135,10 +170,8 @@ else
 fi
 echo
 
-# Create build directory
-echo "Creating build directory: $BUILD_DIR"
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR"
+# Create build directory (already exists from fetch step)
+echo "Setting up build directory: $BUILD_DIR"
 cd "$BUILD_DIR"
 
 # Create virtual environment for building
@@ -169,45 +202,18 @@ echo "Building wheels..."
 echo "========================================"
 echo
 
-# pydantic-core
-echo "Building pydantic-core==${PYDANTIC_CORE_VERSION}..."
-pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR/netbsd" "pydantic-core==${PYDANTIC_CORE_VERSION}"
-if [ $? -eq 0 ]; then
-    printf "${GREEN}OK${NC} pydantic-core wheel built\n"
-else
-    printf "${RED}FAILED${NC} pydantic-core wheel build failed\n"
-fi
-echo
-
-# cryptography
-echo "Building cryptography==${CRYPTOGRAPHY_VERSION}..."
-pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR/netbsd" "cryptography==${CRYPTOGRAPHY_VERSION}"
-if [ $? -eq 0 ]; then
-    printf "${GREEN}OK${NC} cryptography wheel built\n"
-else
-    printf "${RED}FAILED${NC} cryptography wheel build failed\n"
-fi
-echo
-
-# psutil
-echo "Building psutil==${PSUTIL_VERSION}..."
-pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR/netbsd" "psutil==${PSUTIL_VERSION}"
-if [ $? -eq 0 ]; then
-    printf "${GREEN}OK${NC} psutil wheel built\n"
-else
-    printf "${RED}FAILED${NC} psutil wheel build failed\n"
-fi
-echo
-
-# markupsafe
-echo "Building markupsafe==${MARKUPSAFE_VERSION}..."
-pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR/netbsd" "markupsafe==${MARKUPSAFE_VERSION}"
-if [ $? -eq 0 ]; then
-    printf "${GREEN}OK${NC} markupsafe wheel built\n"
-else
-    printf "${RED}FAILED${NC} markupsafe wheel build failed\n"
-fi
-echo
+FAIL_COUNT=0
+for pkg_spec in $PACKAGES_TO_BUILD; do
+    pkg_name=$(echo "$pkg_spec" | cut -d'=' -f1)
+    echo "Building ${pkg_spec}..."
+    if pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR/netbsd" "$pkg_spec"; then
+        printf "${GREEN}OK${NC} %s wheel built\n" "$pkg_name"
+    else
+        printf "${RED}FAILED${NC} %s wheel build failed\n" "$pkg_name"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    fi
+    echo
+done
 
 # Deactivate virtual environment
 deactivate
@@ -224,9 +230,13 @@ echo "========================================"
 ls -la "$WHEELHOUSE_DIR/netbsd/"
 echo
 
-echo "========================================"
-printf "${GREEN}Wheel building complete!${NC}\n"
-echo "========================================"
+if [ "$FAIL_COUNT" -gt 0 ]; then
+    printf "${RED}Warning: %d wheel(s) failed to build${NC}\n" "$FAIL_COUNT"
+else
+    echo "========================================"
+    printf "${GREEN}Wheel building complete!${NC}\n"
+    echo "========================================"
+fi
 echo
 echo "To use these wheels during installation, use:"
 echo "  pip install --find-links=$WHEELHOUSE_DIR/netbsd -r requirements.txt"
