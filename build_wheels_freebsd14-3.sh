@@ -9,8 +9,11 @@
 # and builds wheels for packages that need native compilation:
 #   - pydantic-core (Rust)
 #   - cryptography (Rust + C)
+#   - bcrypt (Rust)
 #   - psutil (C)
 #   - markupsafe (C)
+#   - cffi (C) - runtime dependency of pynacl
+#   - pynacl (C + libsodium) - runtime dependency of paramiko
 #
 # Usage: Run this script on a FreeBSD 14.3 system to generate wheels.
 #        The wheels will be placed in the wheelhouse directory.
@@ -28,7 +31,7 @@ BUILD_DIR="/tmp/webzfs_wheel_build"
 REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/main/requirements.txt"
 
 # Packages that require native compilation (need pre-built wheels)
-NATIVE_PACKAGES="pydantic-core cryptography psutil markupsafe"
+NATIVE_PACKAGES="pydantic-core cryptography bcrypt psutil markupsafe cffi pynacl"
 
 # Colors for output
 RED='\033[0;31m'
@@ -92,7 +95,7 @@ fi
 
 # Install build dependencies
 echo "Installing build dependencies..."
-pkg install -y python${PYTHON_VERSION} py${PYTHON_VERSION}-pip rust gmake libffi openssl
+pkg install -y python${PYTHON_VERSION} py${PYTHON_VERSION}-pip rust gmake libffi openssl libsodium
 
 if [ $? -ne 0 ]; then
     printf "${RED}Error: Failed to install build dependencies${NC}\n"
