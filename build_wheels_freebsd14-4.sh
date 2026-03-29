@@ -61,15 +61,26 @@ echo "Fetching requirements.txt from webzfs/webzfs..."
 REQUIREMENTS_FILE="$BUILD_DIR/requirements.txt"
 mkdir -p "$BUILD_DIR"
 
-fetch -o "$REQUIREMENTS_FILE" "$REQUIREMENTS_URL" 2>/dev/null || \
-    curl -sSfL -o "$REQUIREMENTS_FILE" "$REQUIREMENTS_URL"
+# Remove any stale copy from a previous run
+rm -f "$REQUIREMENTS_FILE"
+
+# Use cache-busting query parameter to avoid CDN serving stale content
+CACHE_BUST="?$(date +%s)"
+if command -v fetch >/dev/null 2>&1; then
+    fetch -o "$REQUIREMENTS_FILE" "${REQUIREMENTS_URL}${CACHE_BUST}" 2>/dev/null
+fi
+
+# Fall back to curl if fetch failed or is not available
+if [ ! -s "$REQUIREMENTS_FILE" ]; then
+    curl -sSfL -o "$REQUIREMENTS_FILE" "${REQUIREMENTS_URL}${CACHE_BUST}"
+fi
 
 if [ ! -s "$REQUIREMENTS_FILE" ]; then
     printf "${RED}Error: Failed to fetch requirements.txt${NC}\n"
     exit 1
 fi
 
-printf "${GREEN}OK${NC} requirements.txt fetched\n"
+printf "${GREEN}OK${NC} requirements.txt fetched (%s lines)\n" "$(wc -l < "$REQUIREMENTS_FILE" | tr -d ' ')"
 echo
 
 # Parse package versions from requirements.txt
