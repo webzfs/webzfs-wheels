@@ -26,7 +26,9 @@ set -e
 # Configuration
 PYTHON_VERSION="311"
 PYTHON_CMD="python3.11"
-WHEELHOUSE_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+WHEELHOUSE_DIR="$REPO_DIR/wheelhouse/netbsd10-1"
+mkdir -p "$WHEELHOUSE_DIR"
 BUILD_DIR="/tmp/webzfs_wheel_build"
 REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/main/requirements.txt"
 
@@ -206,7 +208,7 @@ FAIL_COUNT=0
 for pkg_spec in $PACKAGES_TO_BUILD; do
     pkg_name=$(echo "$pkg_spec" | cut -d'=' -f1)
     echo "Building ${pkg_spec}..."
-    if pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR/netbsd" "$pkg_spec"; then
+    if pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR" "$pkg_spec"; then
         printf "${GREEN}OK${NC} %s wheel built\n" "$pkg_name"
     else
         printf "${RED}FAILED${NC} %s wheel build failed\n" "$pkg_name"
@@ -227,7 +229,7 @@ echo
 echo "========================================"
 echo "Wheels built for NetBSD:"
 echo "========================================"
-ls -la "$WHEELHOUSE_DIR/netbsd/"
+ls -la "$WHEELHOUSE_DIR/"
 echo
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
@@ -239,5 +241,5 @@ else
 fi
 echo
 echo "To use these wheels during installation, use:"
-echo "  pip install --find-links=$WHEELHOUSE_DIR/netbsd -r requirements.txt"
+echo "  pip install --find-links=$WHEELHOUSE_DIR -r requirements.txt"
 echo

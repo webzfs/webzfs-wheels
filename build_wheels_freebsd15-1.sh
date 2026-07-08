@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# WebZFS Wheel Builder for FreeBSD 15.0
+# WebZFS Wheel Builder for FreeBSD 15.1
 # 
 # This script builds Python wheels for packages that require native compilation.
 # Pre-built wheels eliminate the need to compile dependencies during installation.
@@ -15,7 +15,7 @@
 #   - cffi (C) - runtime dependency of pynacl
 #   - pynacl (C + libsodium) - runtime dependency of paramiko
 #
-# Usage: Run this script on a FreeBSD 15.0 system to generate wheels.
+# Usage: Run this script on a FreeBSD 15.1 system to generate wheels.
 #        The wheels will be placed in the wheelhouse directory.
 #
 # Requirements: Must be run as root to install build dependencies.
@@ -27,7 +27,7 @@ set -e
 PYTHON_VERSION="311"
 PYTHON_CMD="python3.11"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-WHEELHOUSE_DIR="$REPO_DIR/wheelhouse/freebsd15-0"
+WHEELHOUSE_DIR="$REPO_DIR/wheelhouse/freebsd15-1"
 mkdir -p "$WHEELHOUSE_DIR"
 BUILD_DIR="/tmp/webzfs_wheel_build"
 REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/main/requirements.txt"
@@ -42,7 +42,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo "========================================"
-echo "WebZFS Wheel Builder for FreeBSD 15.0"
+echo "WebZFS Wheel Builder for FreeBSD 15.1"
 echo "========================================"
 echo
 
@@ -182,7 +182,7 @@ rm -rf "$BUILD_DIR"
 # List built wheels
 echo
 echo "========================================"
-echo "Wheels built for FreeBSD 15.0:"
+echo "Wheels built for FreeBSD 15.1:"
 echo "========================================"
 ls -la "$WHEELHOUSE_DIR/"
 echo
