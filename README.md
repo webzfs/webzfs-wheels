@@ -1,17 +1,20 @@
 # webzfs-wheels
 
-Scripts to create Pre-built Wheels for WebZFS to make installation easier on the BSDs
+Scripts to create pre-built wheels for WebZFS to make installation easier on the BSDs.
 
-Pre-Built Wheels will bein /Wheelhouse
+Pre-built wheels live in `wheelhouse/`.
 
-Several Python packages in requirements.txt have native extensions that require compilation:
+Several Python packages in `requirements.txt` have native extensions that require compilation:
 
 | Package | Language | Notes |
 |---------|----------|-------|
 | pydantic-core | Rust | Core validation library, requires Rust compiler |
 | cryptography | Rust + C | Cryptographic library, requires Rust and OpenSSL |
+| bcrypt | Rust | Password hashing, requires Rust compiler |
 | psutil | C | System monitoring, requires C compiler |
 | markupsafe | C | String escaping for Jinja2, requires C compiler |
+| cffi | C | Runtime dependency of pynacl, requires libffi |
+| pynacl | C + libsodium | Runtime dependency of paramiko, requires libsodium |
 
 On Linux, PyPI provides pre-built wheels for these packages. However, BSD platforms (FreeBSD, NetBSD) typically need to compile from source because:
 
@@ -23,9 +26,11 @@ On Linux, PyPI provides pre-built wheels for these packages. However, BSD platfo
 
 | Script | Platform | Output Directory |
 |--------|----------|------------------|
-| `build_wheels_freebsd14.sh` | FreeBSD 14.3 | `freebsd14/` |
-| `build_wheels_freebsd15.sh` | FreeBSD 15.0 | `freebsd15/` |
-| `build_wheels_netbsd.sh` | NetBSD | `netbsd/` |
+| `build_wheels_freebsd14-3.sh` | FreeBSD 14.3 | `wheelhouse/freebsd14-3/` |
+| `build_wheels_freebsd14-4.sh` | FreeBSD 14.4 | `wheelhouse/freebsd14-4/` |
+| `build_wheels_freebsd15-0.sh` | FreeBSD 15.0 | `wheelhouse/freebsd15-0/` |
+| `build_wheels_freebsd15-1.sh` | FreeBSD 15.1 | `wheelhouse/freebsd15-1/` |
+| `build_wheels_netbsd10-1.sh` | NetBSD 10.1 | `wheelhouse/netbsd10-1/` |
 
 ## Building Wheels
 
@@ -33,20 +38,27 @@ Run the appropriate build script on the target platform as root:
 
 ```bash
 # On FreeBSD 14.3
-sudo sh build_wheels_freebsd14.sh
+sudo sh build_wheels_freebsd14-3.sh
+
+# On FreeBSD 14.4
+sudo sh build_wheels_freebsd14-4.sh
 
 # On FreeBSD 15.0
-sudo sh build_wheels_freebsd15.sh
+sudo sh build_wheels_freebsd15-0.sh
 
-# On NetBSD
-sudo sh build_wheels_netbsd.sh
+# On FreeBSD 15.1
+sudo sh build_wheels_freebsd15-1.sh
+
+# On NetBSD 10.1
+sudo sh build_wheels_netbsd10-1.sh
 ```
 
 The scripts will:
-1. Install required build dependencies (Rust, gmake, etc.)
-2. Create a temporary virtual environment
-3. Build wheels for each package
-4. Place the wheels in the appropriate subdirectory
+1. Fetch the current `requirements.txt` from the main webzfs repo
+2. Install required build dependencies (Rust, gmake, libffi, openssl, libsodium, etc.)
+3. Create a temporary virtual environment
+4. Build wheels for each native package at the versions pinned in `requirements.txt`
+5. Place the wheels in the appropriate subdirectory
 
 ## Using Pre-built Wheels
 
@@ -54,27 +66,37 @@ To use the pre-built wheels during installation, use pip's `--find-links` option
 
 ```bash
 # FreeBSD 14.3
-pip install --find-links=wheelhouse/freebsd14 -r requirements.txt
+pip install --find-links=wheelhouse/freebsd14-3 -r requirements.txt
+
+# FreeBSD 14.4
+pip install --find-links=wheelhouse/freebsd14-4 -r requirements.txt
 
 # FreeBSD 15.0
-pip install --find-links=wheelhouse/freebsd15 -r requirements.txt
+pip install --find-links=wheelhouse/freebsd15-0 -r requirements.txt
 
-# NetBSD
-pip install --find-links=wheelhouse/netbsd -r requirements.txt
+# FreeBSD 15.1
+pip install --find-links=wheelhouse/freebsd15-1 -r requirements.txt
+
+# NetBSD 10.1
+pip install --find-links=wheelhouse/netbsd10-1 -r requirements.txt
 ```
 
 Pip will automatically use the local wheels if they match the package version and platform, falling back to PyPI for packages without local wheels.
 
+See [`wheelhouse/readme.md`](wheelhouse/readme.md) for the full list of pre-built wheels currently available.
+
 ## Package Versions
 
-The build scripts use the following package versions (matching requirements.txt):
+The build scripts resolve package versions dynamically from `requirements.txt`, so they always
+build the versions currently pinned there. The native packages built are:
 
-- pydantic-core==2.41.5
-- cryptography==44.0.0
-- psutil==7.1.3
-- markupsafe==3.0.3
-
-If requirements.txt is updated, the version constants in the build scripts should also be updated.
+- pydantic-core
+- cryptography
+- bcrypt
+- psutil
+- markupsafe
+- cffi
+- pynacl
 
 ## NetBSD Notes
 
@@ -89,5 +111,5 @@ Wheels are named using the standard Python wheel format:
 
 For example:
 ```
-pydantic_core-2.41.5-cp311-cp311-freebsd_14_3_amd64.whl
+pydantic_core-2.46.4-cp311-cp311-freebsd_15_1_release_p1_amd64.whl
 ```
