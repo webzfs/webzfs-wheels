@@ -69,7 +69,7 @@ rm -f "$REQUIREMENTS_FILE"
 # Use cache-busting query parameter to avoid CDN serving stale content
 CACHE_BUST="?$(date +%s)"
 if command -v fetch >/dev/null 2>&1; then
-    fetch -o "$REQUIREMENTS_FILE" "${REQUIREMENTS_URL}${CACHE_BUST}" 2>/dev/null
+    fetch -o "$REQUIREMENTS_FILE" "${REQUIREMENTS_URL}${CACHE_BUST}" 2>/dev/null || true
 fi
 
 # Fall back to curl if fetch failed or is not available
