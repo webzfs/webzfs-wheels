@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # WebZFS Wheel Builder for NetBSD
-# 
+#
 # This script builds Python wheels for packages that require native compilation.
 # Pre-built wheels eliminate the need to compile dependencies during installation.
 #
@@ -123,23 +123,23 @@ fi
 
 if [ "$RUST_WORKS" -eq 0 ]; then
     echo "Installing Rust via rustup..."
-    
+
     # Remove broken pkgsrc rust if installed
     pkgin -y remove rust 2>/dev/null || true
-    
+
     # Install via rustup
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
-    
+
     # Source cargo environment
     export PATH="$HOME/.cargo/bin:$PATH"
     . "$HOME/.cargo/env" 2>/dev/null || true
-    
+
     # Verify it works
     if ! rustc --version >/dev/null 2>&1; then
         printf "${RED}Error: Rust installation via rustup failed${NC}\n"
         exit 1
     fi
-    
+
     printf "${GREEN}OK${NC} Rust installed via rustup\n"
 else
     # Make sure cargo is in PATH
