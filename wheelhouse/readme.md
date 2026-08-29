@@ -65,4 +65,13 @@
 │   ├── psutil-7.2.2-cp311-cp311-netbsd_10_1_amd64.whl
 │   ├── pydantic_core-2.41.5-cp311-cp311-netbsd_10_1_amd64.whl
 │   └── pydantic_core-2.46.4-cp311-cp311-netbsd_10_1_amd64.whl
+
+�^t^|�^t^`�^t^` n1tbsd10-1
+^t^b   �^t^|�^t^`�^t^` bcrypt-5.0.0-cp312-cp312-netbsd_11_0_amd64.whl
+^t^b   �^t^|�^t^`�^t^` cffi-2.1.0-cp312-cp312-netbsd_11_0_amd64.whl
+^t^b   �^t^|�^t^`�^t^` cryptography-49.0.0-cp312-abi3-netbsd_11_0_amd64.whl
+^t^b   �^t^|�^t^`�^t^` markupsafe-3.0.3-cp312-cp312-netbsd_11_0_amd64.whl
+^t^b   �^t^|�^t^`�^t^` psutil-7.2.2-cp312-cp312-netbsd_11_0_amd64.whl
+^t^b   �^t^|�^t^`�^t^` pydantic_core-2.46.4-cp312-cp312-netbsd_11_0_amd64.whl
+^t^b   �^t^|�^t^`�^t^` pynacl-1.6.2-cp312-cp312-netbsd_11_0_amd64.whl
 ```

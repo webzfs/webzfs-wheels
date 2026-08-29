@@ -31,6 +31,7 @@ On Linux, PyPI provides pre-built wheels for these packages. However, BSD platfo
 | `build_wheels_freebsd15-0.sh` | FreeBSD 15.0 | `wheelhouse/freebsd15-0/` |
 | `build_wheels_freebsd15-1.sh` | FreeBSD 15.1 | `wheelhouse/freebsd15-1/` |
 | `build_wheels_netbsd10-1.sh` | NetBSD 10.1 | `wheelhouse/netbsd10-1/` |
+| `build_wheels_netbsd11-0.sh` | NetBSD 11.0 | `wheelhouse/netbsd11-0/` |
 
 ## Building Wheels
 
@@ -51,6 +52,9 @@ sudo sh build_wheels_freebsd15-1.sh
 
 # On NetBSD 10.1
 sudo sh build_wheels_netbsd10-1.sh
+
+# On NetBSD 11.0
+sudo sh build_wheels_netbsd11-0.sh
 ```
 
 The scripts will:
@@ -79,6 +83,9 @@ pip install --find-links=wheelhouse/freebsd15-1 -r requirements.txt
 
 # NetBSD 10.1
 pip install --find-links=wheelhouse/netbsd10-1 -r requirements.txt
+
+# NetBSD 11.0
+pip install --find-links=wheelhouse/netbsd11-0 -r requirements.txt
 ```
 
 Pip will automatically use the local wheels if they match the package version and platform, falling back to PyPI for packages without local wheels.
