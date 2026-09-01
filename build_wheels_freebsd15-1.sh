@@ -110,7 +110,7 @@ fi
 
 # Install build dependencies
 echo "Installing build dependencies..."
-pkg install -y python${PYTHON_VERSION} py${PYTHON_VERSION}-pip rust gmake libffi openssl libsodium
+pkg install -y python${PYTHON_VERSION} rust gmake libffi openssl libsodium expat
 
 if [ $? -ne 0 ]; then
     printf "${RED}Error: Failed to install build dependencies${NC}\n"
@@ -128,11 +128,27 @@ fi
 printf "${GREEN}OK${NC} Rust $(rustc --version | cut -d' ' -f2) found\n"
 
 # Verify Python
-if ! command -v $PYTHON_CMD >/dev/null 2>&1; then
+if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
     printf "${RED}Error: Python not found${NC}\n"
     exit 1
 fi
-printf "${GREEN}OK${NC} $($PYTHON_CMD --version) found\n"
+printf "${GREEN}OK${NC} $("$PYTHON_CMD" --version) found\n"
+
+# Python's pyexpat extension is linked against the ports Expat library. A
+# partially upgraded package set can leave an older libexpat on disk that does
+# not provide symbols required by the new Python package. Repair Expat before
+# venv invokes ensurepip, which imports pyexpat through pip's dependencies.
+if ! "$PYTHON_CMD" -c 'import pyexpat' >/dev/null 2>&1; then
+    printf "${YELLOW}Warning: Python cannot load pyexpat; reinstalling Expat${NC}\n"
+    pkg install -f -y expat
+fi
+
+if ! "$PYTHON_CMD" -c 'import pyexpat' >/dev/null 2>&1; then
+    printf "${RED}Error: Python still cannot load pyexpat after reinstalling Expat${NC}\n"
+    "$PYTHON_CMD" -c 'import pyexpat'
+    exit 1
+fi
+printf "${GREEN}OK${NC} Expat $("$PYTHON_CMD" -c 'import pyexpat; print(pyexpat.EXPAT_VERSION)') found\n"
 echo
 
 # Create build directory (already exists from fetch step)
@@ -141,13 +157,13 @@ cd "$BUILD_DIR"
 
 # Create virtual environment for building
 echo "Creating build virtual environment..."
-$PYTHON_CMD -m venv build_venv
-. build_venv/bin/activate
+"$PYTHON_CMD" -m venv --clear build_venv
+BUILD_PYTHON="$BUILD_DIR/build_venv/bin/python3"
 
 # Upgrade pip and install build tools
 echo "Installing build tools..."
-pip install --upgrade pip wheel setuptools
-pip install maturin  # Required for Rust-based packages
+"$BUILD_PYTHON" -m pip install --upgrade pip wheel setuptools
+"$BUILD_PYTHON" -m pip install maturin  # Required for Rust-based packages
 
 printf "${GREEN}OK${NC} Build environment ready\n"
 echo
@@ -165,7 +181,7 @@ FAIL_COUNT=0
 for pkg_spec in $PACKAGES_TO_BUILD; do
     pkg_name=$(echo "$pkg_spec" | cut -d'=' -f1)
     echo "Building ${pkg_spec}..."
-    if pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR" "$pkg_spec"; then
+    if "$BUILD_PYTHON" -m pip wheel --no-deps --wheel-dir="$WHEELHOUSE_DIR" "$pkg_spec"; then
         printf "${GREEN}OK${NC} %s wheel built\n" "$pkg_name"
     else
         printf "${RED}FAILED${NC} %s wheel build failed\n" "$pkg_name"
@@ -173,9 +189,6 @@ for pkg_spec in $PACKAGES_TO_BUILD; do
     fi
     echo
 done
-
-# Deactivate virtual environment
-deactivate
 
 # Clean up
 echo "Cleaning up build directory..."
