@@ -30,7 +30,10 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 WHEELHOUSE_DIR="$REPO_DIR/wheelhouse/freebsd14-3"
 mkdir -p "$WHEELHOUSE_DIR"
 BUILD_DIR="/tmp/webzfs_wheel_build"
-REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/main/requirements.txt"
+# Branch of webzfs/webzfs to read requirements.txt from. Override with
+# WEBZFS_BRANCH=<branch> to build wheels before changes are merged to main.
+WEBZFS_BRANCH="${WEBZFS_BRANCH:-main}"
+REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/${WEBZFS_BRANCH}/requirements.txt"
 
 # Packages that require native compilation (need pre-built wheels)
 NATIVE_PACKAGES="pydantic-core cryptography bcrypt psutil markupsafe cffi pynacl"
@@ -59,7 +62,7 @@ echo "FreeBSD version: $FREEBSD_VERSION"
 echo
 
 # Fetch requirements.txt from GitHub
-echo "Fetching requirements.txt from webzfs/webzfs..."
+echo "Fetching requirements.txt from webzfs/webzfs (branch: ${WEBZFS_BRANCH})..."
 REQUIREMENTS_FILE="$BUILD_DIR/requirements.txt"
 mkdir -p "$BUILD_DIR"
 

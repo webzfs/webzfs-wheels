@@ -68,6 +68,19 @@ The scripts will:
 4. Build wheels for each native package at the versions pinned in `requirements.txt`
 5. Place the wheels in the appropriate subdirectory
 
+### Building From a Branch Other Than main
+
+By default the scripts read `requirements.txt` from the `main` branch. To
+build wheels for dependency updates before they are merged, set
+`WEBZFS_BRANCH` to the pushed branch name:
+
+```sh
+sudo env WEBZFS_BRANCH=0.85.4 sh build_wheels_freebsd15-1.sh
+```
+
+Use `sudo env VAR=value` rather than `VAR=value sudo`, because `sudo` drops
+most environment variables by default.
+
 ## Using Pre-built Wheels
 
 To use the pre-built wheels during installation, use pip's `--find-links` option:
