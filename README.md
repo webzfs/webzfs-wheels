@@ -28,6 +28,7 @@ On Linux, PyPI provides pre-built wheels for these packages. However, BSD platfo
 |--------|----------|------------------|
 | `build_wheels_freebsd14-3.sh` | FreeBSD 14.3 | `wheelhouse/freebsd14-3/` |
 | `build_wheels_freebsd14-4.sh` | FreeBSD 14.4 | `wheelhouse/freebsd14-4/` |
+| `build_wheels_freebsd14-5.sh` | FreeBSD 14.5 | `wheelhouse/freebsd14-5/` |
 | `build_wheels_freebsd15-0.sh` | FreeBSD 15.0 | `wheelhouse/freebsd15-0/` |
 | `build_wheels_freebsd15-1.sh` | FreeBSD 15.1 | `wheelhouse/freebsd15-1/` |
 | `build_wheels_netbsd10-1.sh` | NetBSD 10.1 | `wheelhouse/netbsd10-1/` |
@@ -43,6 +44,9 @@ sudo sh build_wheels_freebsd14-3.sh
 
 # On FreeBSD 14.4
 sudo sh build_wheels_freebsd14-4.sh
+
+# On FreeBSD 14.5
+sudo sh build_wheels_freebsd14-5.sh
 
 # On FreeBSD 15.0
 sudo sh build_wheels_freebsd15-0.sh
@@ -74,6 +78,9 @@ pip install --find-links=wheelhouse/freebsd14-3 -r requirements.txt
 
 # FreeBSD 14.4
 pip install --find-links=wheelhouse/freebsd14-4 -r requirements.txt
+
+# FreeBSD 14.5
+pip install --find-links=wheelhouse/freebsd14-5 -r requirements.txt
 
 # FreeBSD 15.0
 pip install --find-links=wheelhouse/freebsd15-0 -r requirements.txt
