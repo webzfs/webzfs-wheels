@@ -135,7 +135,13 @@ build the versions currently pinned there. The native packages built are:
 
 ## NetBSD Notes
 
-The pkgsrc `rust` package on NetBSD has known issues (Bus error on execution). The NetBSD build script uses rustup to install a working Rust compiler instead.
+The pkgsrc `rust` package on NetBSD has known issues (Bus error on execution). The NetBSD build scripts use rustup to install a working Rust compiler instead.
+
+Each NetBSD build script checks the major release of the system it runs on
+and exits if it does not match (10.x for `build_wheels_netbsd10-1.sh`, 11.x
+for `build_wheels_netbsd11-0.sh`), so wheels cannot be placed in the wrong
+wheelhouse directory. PyNaCl is built against the pkgsrc `libsodium`
+(`SODIUM_INSTALL=system`).
 
 ## Wheel Naming Convention
 
