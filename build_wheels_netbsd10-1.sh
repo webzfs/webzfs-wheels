@@ -24,8 +24,8 @@
 set -e
 
 # Configuration
-PYTHON_VERSION="311"
-PYTHON_CMD="python3.11"
+PYTHON_VERSION="312"
+PYTHON_CMD="python3.12"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 WHEELHOUSE_DIR="$REPO_DIR/wheelhouse/netbsd10-1"
 mkdir -p "$WHEELHOUSE_DIR"
