@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# WebZFS Wheel Builder for NetBSD
+# WebZFS Wheel Builder for NetBSD 10.1
 #
 # This script builds Python wheels for packages that require native compilation.
 # Pre-built wheels eliminate the need to compile dependencies during installation.
@@ -9,11 +9,17 @@
 # and builds wheels for packages that need native compilation:
 #   - pydantic-core (Rust)
 #   - cryptography (Rust + C)
+#   - bcrypt (Rust)
 #   - psutil (C)
 #   - markupsafe (C)
+#   - cffi (C)
+#   - pynacl (C, requires libsodium)
 #
-# Usage: Run this script on a NetBSD system to generate wheels.
-#        The wheels will be placed in the wheelhouse directory.
+# Wheels are built with CPython 3.12 (cp312). This is the WebZFS Python ABI
+# target for NetBSD.
+#
+# Usage: Run this script on a NetBSD 10.x system to generate wheels.
+#        The wheels will be placed in the wheelhouse/netbsd10-1 directory.
 #
 # Requirements: Must be run as root to install build dependencies.
 #
@@ -28,7 +34,6 @@ PYTHON_VERSION="312"
 PYTHON_CMD="python3.12"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 WHEELHOUSE_DIR="$REPO_DIR/wheelhouse/netbsd10-1"
-mkdir -p "$WHEELHOUSE_DIR"
 BUILD_DIR="/tmp/webzfs_wheel_build"
 # Branch of webzfs/webzfs to read requirements.txt from. Override with
 # WEBZFS_BRANCH=<branch> to build wheels before changes are merged to main.
@@ -36,7 +41,7 @@ WEBZFS_BRANCH="${WEBZFS_BRANCH:-main}"
 REQUIREMENTS_URL="https://raw.githubusercontent.com/webzfs/webzfs/refs/heads/${WEBZFS_BRANCH}/requirements.txt"
 
 # Packages that require native compilation (need pre-built wheels)
-NATIVE_PACKAGES="pydantic-core cryptography psutil markupsafe"
+NATIVE_PACKAGES="pydantic-core cryptography bcrypt psutil markupsafe cffi pynacl"
 
 # Colors for output
 RED='\033[0;31m'
@@ -45,7 +50,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo "========================================"
-echo "WebZFS Wheel Builder for NetBSD"
+echo "WebZFS Wheel Builder for NetBSD 10.1"
 echo "========================================"
 echo
 
@@ -56,10 +61,19 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# Check NetBSD version
+# Check NetBSD version - this builder is only for NetBSD 10.x
 NETBSD_VERSION=$(uname -r)
+NETBSD_MAJOR=$(echo "$NETBSD_VERSION" | cut -d. -f1)
 echo "NetBSD version: $NETBSD_VERSION"
+if [ "$NETBSD_MAJOR" != "10" ]; then
+    printf "${RED}Error: This builder targets NetBSD 10.x but this system is NetBSD ${NETBSD_VERSION}${NC}\n"
+    echo "Use the builder matching this system's release so wheels are placed"
+    echo "in the correct wheelhouse directory."
+    exit 1
+fi
 echo
+
+mkdir -p "$WHEELHOUSE_DIR"
 
 # Fetch requirements.txt from GitHub
 echo "Fetching requirements.txt from webzfs/webzfs (branch: ${WEBZFS_BRANCH})..."
@@ -201,6 +215,10 @@ export CFLAGS="-I/usr/pkg/include"
 export LDFLAGS="-L/usr/pkg/lib -Wl,-R/usr/pkg/lib"
 export PKG_CONFIG_PATH="/usr/pkg/lib/pkgconfig"
 
+# PyNaCl should link against the pkgsrc libsodium instead of building
+# its bundled copy
+export SODIUM_INSTALL="system"
+
 # Build wheels
 echo "========================================"
 echo "Building wheels..."
@@ -230,7 +248,7 @@ rm -rf "$BUILD_DIR"
 # List built wheels
 echo
 echo "========================================"
-echo "Wheels built for NetBSD:"
+echo "Wheels built for NetBSD 10.1:"
 echo "========================================"
 ls -la "$WHEELHOUSE_DIR/"
 echo

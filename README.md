@@ -24,32 +24,46 @@ On Linux, PyPI provides pre-built wheels for these packages. However, BSD platfo
 
 ## Build Scripts
 
+All wheels are built with CPython 3.12 (`cp312`), the WebZFS Python target on
+every supported platform.
+
 | Script | Platform | Output Directory |
 |--------|----------|------------------|
-| `build_wheels_freebsd14-3.sh` | FreeBSD 14.3 | `wheelhouse/freebsd14-3/` |
 | `build_wheels_freebsd14-4.sh` | FreeBSD 14.4 | `wheelhouse/freebsd14-4/` |
 | `build_wheels_freebsd14-5.sh` | FreeBSD 14.5 | `wheelhouse/freebsd14-5/` |
-| `build_wheels_freebsd15-0.sh` | FreeBSD 15.0 | `wheelhouse/freebsd15-0/` |
 | `build_wheels_freebsd15-1.sh` | FreeBSD 15.1 | `wheelhouse/freebsd15-1/` |
 | `build_wheels_netbsd10-1.sh` | NetBSD 10.1 | `wheelhouse/netbsd10-1/` |
 | `build_wheels_netbsd11-0.sh` | NetBSD 11.0 | `wheelhouse/netbsd11-0/` |
+
+## End-of-Life Releases
+
+FreeBSD 14.3 and FreeBSD 15.0 are end-of-life and no longer receive new
+wheels. Their build scripts were moved to `EOL/` for reference and are not
+maintained. The existing wheels in `wheelhouse/freebsd14-3/` and
+`wheelhouse/freebsd15-0/` remain available but stop at the versions that
+were current when each release reached end-of-life (cryptography 49.0.0,
+Python 3.11 only).
+
+| Release | Status | WebZFS installer behavior |
+|---------|--------|---------------------------|
+| FreeBSD 14.3 | EOL | Uses the `freebsd14-4` wheels and prints a warning |
+| FreeBSD 15.0 | EOL | Uses the `freebsd15-1` wheels and prints a warning |
+
+Upgrading to a supported release is recommended. The FreeBSD 15.0 build of
+cryptography 50.0.2 could not be produced: the `cargo` package in the
+current FreeBSD 15 package repository requires a newer libc
+(`FBSD_1.9`) than FreeBSD 15.0 provides.
 
 ## Building Wheels
 
 Run the appropriate build script on the target platform as root:
 
 ```bash
-# On FreeBSD 14.3
-sudo sh build_wheels_freebsd14-3.sh
-
 # On FreeBSD 14.4
 sudo sh build_wheels_freebsd14-4.sh
 
 # On FreeBSD 14.5
 sudo sh build_wheels_freebsd14-5.sh
-
-# On FreeBSD 15.0
-sudo sh build_wheels_freebsd15-0.sh
 
 # On FreeBSD 15.1
 sudo sh build_wheels_freebsd15-1.sh
@@ -86,17 +100,11 @@ most environment variables by default.
 To use the pre-built wheels during installation, use pip's `--find-links` option:
 
 ```bash
-# FreeBSD 14.3
-pip install --find-links=wheelhouse/freebsd14-3 -r requirements.txt
-
 # FreeBSD 14.4
 pip install --find-links=wheelhouse/freebsd14-4 -r requirements.txt
 
 # FreeBSD 14.5
 pip install --find-links=wheelhouse/freebsd14-5 -r requirements.txt
-
-# FreeBSD 15.0
-pip install --find-links=wheelhouse/freebsd15-0 -r requirements.txt
 
 # FreeBSD 15.1
 pip install --find-links=wheelhouse/freebsd15-1 -r requirements.txt
@@ -138,5 +146,13 @@ Wheels are named using the standard Python wheel format:
 
 For example:
 ```
-pydantic_core-2.46.4-cp311-cp311-freebsd_15_1_release_p1_amd64.whl
+pydantic_core-2.46.4-cp312-cp312-freebsd_15_1_release_p1_amd64.whl
+cryptography-50.0.2-cp312-abi3-freebsd_15_1_release_p1_amd64.whl
 ```
+
+cryptography uses the stable ABI, so its tag is `cp312-abi3` rather than
+`cp312-cp312`. The platform tag includes the FreeBSD patch level of the
+build system (for example `release_p1` or `release_p2`). The WebZFS
+installers request exact filenames, so `WHEEL_PLATFORM` in
+`install_freebsd.sh` and `update_freebsd.sh` must match the tag of the
+published wheels for each release.
