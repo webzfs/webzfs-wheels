@@ -11,8 +11,10 @@ wheels target CPython 3.12 (`cp312`).
 | `freebsd14-5` | Supported | Yes (`freebsd_14_5_release_p2_amd64`) |
 | `freebsd15-0` | EOL | No (cp311 only, ends at cryptography 49.0.0) |
 | `freebsd15-1` | Supported | Yes (`freebsd_15_1_release_p1_amd64`) |
+| `freebsd15-2` | Pending | No (builder ready, awaiting the FreeBSD 15.2 release) |
 | `netbsd10-1` | Supported | Yes (`netbsd_10_1_amd64`) |
 | `netbsd11-0` | Supported | Yes (`netbsd_11_0_amd64`) |
+| `netbsd11-1` | Pending | No (builder ready, wheels not yet built) |
 
 Older cp311 wheels are kept for existing installations that have not yet
 moved to Python 3.12.
