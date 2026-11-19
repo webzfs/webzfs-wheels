@@ -13,6 +13,7 @@ wheels target CPython 3.12 (`cp312`).
 | `freebsd15-1` | Supported | Yes (`freebsd_15_1_release_p1_amd64`) |
 | `freebsd15-2` | Pending | No (builder ready, awaiting the FreeBSD 15.2 release) |
 | `netbsd10-1` | Supported | Yes (`netbsd_10_1_amd64`) |
+| `netbsd10-2` | Pending | No (builder ready, wheels not yet built) |
 | `netbsd11-0` | Supported | Yes (`netbsd_11_0_amd64`) |
 | `netbsd11-1` | Pending | No (builder ready, wheels not yet built) |
 

@@ -34,6 +34,7 @@ every supported platform.
 | `build_wheels_freebsd15-1.sh` | FreeBSD 15.1 | `wheelhouse/freebsd15-1/` |
 | `build_wheels_freebsd15-2.sh` | FreeBSD 15.2 | `wheelhouse/freebsd15-2/` |
 | `build_wheels_netbsd10-1.sh` | NetBSD 10.1 | `wheelhouse/netbsd10-1/` |
+| `build_wheels_netbsd10-2.sh` | NetBSD 10.2 | `wheelhouse/netbsd10-2/` |
 | `build_wheels_netbsd11-0.sh` | NetBSD 11.0 | `wheelhouse/netbsd11-0/` |
 | `build_wheels_netbsd11-1.sh` | NetBSD 11.1 | `wheelhouse/netbsd11-1/` |
 
@@ -78,6 +79,9 @@ sudo sh build_wheels_freebsd15-2.sh
 
 # On NetBSD 10.1
 sudo sh build_wheels_netbsd10-1.sh
+
+# On NetBSD 10.2
+sudo sh build_wheels_netbsd10-2.sh
 
 # On NetBSD 11.0
 sudo sh build_wheels_netbsd11-0.sh
@@ -126,6 +130,9 @@ pip install --find-links=wheelhouse/freebsd15-2 -r requirements.txt
 # NetBSD 10.1
 pip install --find-links=wheelhouse/netbsd10-1 -r requirements.txt
 
+# NetBSD 10.2
+pip install --find-links=wheelhouse/netbsd10-2 -r requirements.txt
+
 # NetBSD 11.0
 pip install --find-links=wheelhouse/netbsd11-0 -r requirements.txt
 
@@ -157,9 +164,10 @@ The pkgsrc `rust` package on NetBSD has known issues (Bus error on execution). T
 Each NetBSD build script checks the release of the system it runs on and
 exits if it does not match, so wheels cannot be placed in the wrong
 wheelhouse directory. `build_wheels_netbsd10-1.sh` accepts 10.x and
-`build_wheels_netbsd11-0.sh` accepts 11.x. `build_wheels_netbsd11-1.sh`
-requires exactly 11.1, because the wheel platform tag includes the minor
-release (`netbsd_11_1_amd64`). PyNaCl is built against the pkgsrc `libsodium`
+`build_wheels_netbsd11-0.sh` accepts 11.x. `build_wheels_netbsd10-2.sh`
+requires exactly 10.2 and `build_wheels_netbsd11-1.sh` requires exactly
+11.1, because the wheel platform tag includes the minor release (for
+example `netbsd_11_1_amd64`). PyNaCl is built against the pkgsrc `libsodium`
 (`SODIUM_INSTALL=system`).
 
 ## Wheel Naming Convention
